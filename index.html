@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Concrete Quiz Preview</title>
+    <title>Concrete Quiz</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -31,8 +31,6 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- html2canvas for image generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Custom Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -43,8 +41,11 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Hide scrollbar */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f6e189; }
     </style>
 </head>
 <body class="bg-concrete text-concrete-black min-h-screen flex flex-col items-center justify-center p-4">
@@ -52,7 +53,7 @@
     <div id="root" class="w-full flex justify-center"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState } = React;
 
         // --- IMAGES ---
         const IMAGES = {
@@ -60,26 +61,26 @@
             creator: "https://i.ibb.co.com/VpMjPqXh/y-EFjlr-YC-400x400.jpg"
         };
 
-        // --- COMPONENTS ---
-
-        const CrossOriginAvatar = ({ src, className }) => {
-            return (
-                <img 
-                    src={src} 
-                    alt="avatar" 
-                    className={className}
-                    crossOrigin="anonymous" 
-                />
-            );
-        };
-
-        // --- LOGIC TIER ---
+        // --- LOGIC TIER (Dengan Warna Menyala) ---
         const getTier = (score) => {
             const finalScore = score * 5;
-            if (finalScore >= 95) return { name: "PROTOCOL LEGEND", color: "text-concrete" }; 
-            if (finalScore >= 75) return { name: "YIELD MASTER", color: "text-white" };
-            if (finalScore >= 45) return { name: "DEFI SPECIALIST", color: "text-gray-300" };
-            return { name: "CONCRETE APPRENTICE", color: "text-gray-500" };
+            // Mengembalikan object style untuk efek glow
+            if (finalScore >= 95) return { 
+                name: "PROTOCOL LEGEND", 
+                style: { color: "#FFD700", textShadow: "0 0 10px rgba(255, 215, 0, 0.8)" } // Gold Glow
+            }; 
+            if (finalScore >= 75) return { 
+                name: "YIELD MASTER", 
+                style: { color: "#22D3EE", textShadow: "0 0 8px rgba(34, 211, 238, 0.6)" } // Cyan Glow
+            };
+            if (finalScore >= 45) return { 
+                name: "DEFI SPECIALIST", 
+                style: { color: "#C084FC", textShadow: "0 0 6px rgba(192, 132, 252, 0.4)" } // Purple Glow
+            };
+            return { 
+                name: "CONCRETE APPRENTICE", 
+                style: { color: "#9CA3AF", textShadow: "none" } // Gray Plain
+            };
         };
 
         // --- DATA SOAL ---
@@ -266,84 +267,81 @@
             },
         ];
 
-        // --- CERTIFICATE COMPONENT (ROBUST LAYOUT) ---
+        // --- CERTIFICATE COMPONENT (RESPONSIVE & COMPACT - NO DATE) ---
         const CertificateCard = ({ username, finalScore, tier }) => {
             return (
-                <div 
-                    className="relative bg-black flex-shrink-0 rounded-none overflow-hidden shadow-2xl border-[6px] border-concrete box-border"
-                    // Force size dengan style inline agar html2canvas tidak bingung dengan class Tailwind
-                    style={{ 
-                        width: '800px', 
-                        height: '450px',
-                        fontFamily: 'Inter, sans-serif',
-                        position: 'relative'
-                    }}
-                >
+                <div className="w-full max-w-[800px] aspect-[16/9] bg-black shadow-2xl border-[3px] sm:border-[6px] border-concrete relative overflow-hidden select-none box-border">
+                    
                     {/* Background Elements */}
                     <div className="absolute inset-0 bg-concrete-surface opacity-90"></div>
-                    <div className="absolute top-0 right-0 w-[400px] h-full bg-concrete transform skew-x-[-20deg] translate-x-20 opacity-10"></div>
-                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-concrete rounded-full blur-[100px] opacity-10"></div>
+                    <div className="absolute top-0 right-0 w-[40%] h-full bg-concrete transform skew-x-[-20deg] translate-x-12 opacity-10"></div>
+                    <div className="absolute bottom-0 left-0 w-[40%] h-[50%] bg-concrete rounded-full blur-[80px] opacity-10"></div>
                     
                     {/* Striped Lines */}
-                    <div className="absolute top-0 left-0 w-full h-4 bg-[repeating-linear-gradient(90deg,#000,#000_20px,#f6e189_20px,#f6e189_40px)] z-20"></div>
-                    <div className="absolute bottom-0 left-0 w-full h-4 bg-[repeating-linear-gradient(90deg,#000,#000_20px,#f6e189_20px,#f6e189_40px)] z-20"></div>
+                    <div className="absolute top-0 left-0 w-full h-2 sm:h-4 bg-[repeating-linear-gradient(90deg,#000,#000_20px,#f6e189_20px,#f6e189_40px)] z-20"></div>
+                    <div className="absolute bottom-0 left-0 w-full h-2 sm:h-4 bg-[repeating-linear-gradient(90deg,#000,#000_20px,#f6e189_20px,#f6e189_40px)] z-20"></div>
 
-                    {/* CONTENT LAYOUT - MENGGUNAKAN FLEXBOX ABSOLUT AGAR TIDAK "KETIMPA" */}
-                    <div className="absolute inset-0 z-10 flex flex-row p-10 gap-8 items-center justify-between">
+                    {/* CONTENT LAYOUT - MENGGUNAKAN FLEXBOX JUSTIFY-BETWEEN */}
+                    {/* Ini kunci agar konten mengisi ruang secara merata dari atas ke bawah */}
+                    <div className="absolute inset-0 z-10 flex p-3 sm:p-8 gap-2 sm:gap-8 items-center justify-between">
                         
-                        {/* LEFT SIDE: TEXT INFO (Width 60%) */}
-                        <div className="flex flex-col justify-between h-full py-4" style={{ width: '480px' }}>
-                            <div className="flex flex-col gap-2">
-                                <div className="inline-block px-3 py-1 bg-concrete text-black text-xs font-black font-mono tracking-[0.2em] uppercase rounded-sm w-fit">
+                        {/* LEFT SIDE: JUSTIFY-BETWEEN (Rata Atas & Bawah) */}
+                        <div className="flex flex-col justify-between h-full w-[62%] py-2 sm:py-3 pl-1">
+                            
+                            {/* TOP: Header */}
+                            <div className="mt-1 sm:mt-0">
+                                <div className="inline-block px-1.5 sm:px-3 py-0.5 sm:py-1 bg-concrete text-black text-[7px] sm:text-xs font-black font-mono tracking-[0.15em] uppercase rounded-sm mb-1">
                                     Official Certification
                                 </div>
-                                <h2 className="text-5xl font-black text-white leading-[0.9] uppercase tracking-tighter" style={{ fontSize: '3.5rem', lineHeight: '1' }}>
+                                <h2 className="text-xl sm:text-5xl font-black text-white leading-none uppercase tracking-tighter">
                                     Concrete <br/><span className="text-concrete">Mastery</span>
                                 </h2>
                             </div>
 
-                            <div className="flex flex-col gap-6">
+                            {/* MIDDLE: Info */}
+                            <div className="flex flex-col gap-1 sm:gap-4 justify-center flex-grow">
                                 <div>
-                                    <div className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2">Awarded To</div>
-                                    <div className="text-3xl font-bold text-white bg-black/60 border-l-8 border-concrete px-6 py-3 inline-block max-w-[450px] truncate font-mono box-border">
+                                    <div className="text-[7px] sm:text-xs text-gray-500 uppercase font-bold tracking-widest mb-0.5 sm:mb-1">Awarded To</div>
+                                    <div className="text-sm sm:text-3xl font-bold text-white bg-black/60 border-l-2 sm:border-l-8 border-concrete px-2 sm:px-6 py-1 sm:py-2 inline-block w-full max-w-full truncate font-mono">
                                         {username ? username : "@username"}
                                     </div>
                                 </div>
 
-                                {/* TIER DISPLAY */}
+                                {/* TIER DISPLAY (WITH GLOW STYLE) */}
                                 <div>
-                                    <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Achieved Rank</div>
-                                    <div className={`text-2xl font-black ${tier.color} uppercase tracking-tight font-mono`} style={{ fontSize: '1.75rem' }}>
+                                    <div className="text-[7px] sm:text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-0.5">Achieved Rank</div>
+                                    <div 
+                                        className="text-xs sm:text-2xl font-black uppercase tracking-tight font-mono leading-tight truncate"
+                                        style={tier.style}
+                                    >
                                         {tier.name}
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="flex items-center gap-4 text-xs text-gray-400 font-mono uppercase border-t border-gray-700 pt-5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded bg-gray-800 overflow-hidden border border-gray-600 shrink-0">
-                                            <CrossOriginAvatar src={IMAGES.creator} className="w-full h-full object-cover" />
-                                        </div>
-                                        <span className="font-bold tracking-wider whitespace-nowrap">By @SuperSkyzee</span>
+                            {/* BOTTOM: Simple Footer (Hanya Creator, Tanpa Tanggal) */}
+                            <div className="flex items-center gap-1.5 sm:gap-4 text-[7px] sm:text-xs text-gray-400 font-mono uppercase border-t border-gray-700 pt-1.5 sm:pt-4 mt-1">
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                    <div className="w-4 h-4 sm:w-6 sm:h-6 rounded bg-gray-800 overflow-hidden border border-gray-600 shrink-0">
+                                        <img src={IMAGES.creator} alt="creator" className="w-full h-full object-cover" />
                                     </div>
-                                    <div className="h-4 w-px bg-gray-700"></div>
-                                    <span className="tracking-wider whitespace-nowrap">{new Date().toLocaleDateString()}</span>
+                                    <span className="font-bold tracking-wider">By @SuperSkyzee</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* RIGHT SIDE: SCORE & LOGO (Width ~35%) */}
-                        <div className="flex flex-col items-center justify-center h-full bg-black/20 rounded-2xl border border-white/5 relative overflow-hidden" style={{ width: '240px' }}>
-                            {/* Main Logo */}
-                            <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-concrete shadow-2xl mb-6 relative z-10 bg-black shrink-0">
-                                    <CrossOriginAvatar src={IMAGES.logo} className="w-full h-full object-cover" />
+                        {/* RIGHT SIDE (Score & Logo) - Centered Vertically */}
+                        <div className="flex flex-col items-center justify-center h-full w-[35%] bg-black/20 rounded-lg sm:rounded-2xl border border-white/5 overflow-hidden p-1 sm:p-2">
+                            <div className="w-10 h-10 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl overflow-hidden border-2 sm:border-4 border-concrete shadow-lg mb-1 sm:mb-4 bg-black shrink-0 relative z-10">
+                                <img src={IMAGES.logo} alt="logo" className="w-full h-full object-cover" />
                             </div>
 
-                            <div className="text-center relative z-10">
-                                <div className="text-xs text-concrete font-bold uppercase tracking-[0.2em] mb-1">Total Score</div>
-                                <div className="text-8xl font-black text-white leading-none drop-shadow-xl font-mono" style={{ fontSize: '6rem' }}>
+                            <div className="text-center relative z-10 w-full">
+                                <div className="text-[7px] sm:text-xs text-concrete font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] mb-0">Total Score</div>
+                                <div className="text-3xl sm:text-7xl lg:text-8xl font-black text-white leading-none drop-shadow-xl font-mono">
                                     {finalScore}
                                 </div>
-                                <div className="text-sm font-bold text-gray-500 mt-2 tracking-wider">OUT OF 100</div>
+                                <div className="text-[7px] sm:text-sm font-bold text-gray-500 mt-0.5 sm:mt-2 tracking-wider">OUT OF 100</div>
                             </div>
                         </div>
                     </div>
@@ -359,9 +357,6 @@
             const [showScore, setShowScore] = useState(false);
             const [username, setUsername] = useState("");
             const [isStarted, setIsStarted] = useState(false);
-            const [isDownloading, setIsDownloading] = useState(false);
-            
-            const downloadRef = useRef(null);
 
             const handleAnswerOptionClick = (isCorrect) => {
                 if (isCorrect) {
@@ -388,68 +383,21 @@
             const tier = getTier(score);
 
             const handleShare = () => {
-                // FIXED: Teks share sekarang menyertakan TIER NAME
-                const text = `I just earned the rank of ${tier.name} with a score of ${finalScore}/100 in the Concrete Quiz! 🏆\n\nTest your knowledge about @ConcreteXYZ ecosystem now!\n\nCreator: @SuperSkyzee\nLink: concrete-quiz.vercel.app`;
+                const text = `I just earned the ${tier.name} rank with a score of ${finalScore}/100 in the Concrete Quiz 🏆\n\nTest your knowledge about @ConcreteXYZ ecosystem now!\n\nCreator: @SuperSkyzee\nLink: concrete-quiz.vercel.app`;
                 const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
                 window.open(url, "_blank");
-            };
-
-            const preloadImages = async (element) => {
-                const images = element.querySelectorAll('img');
-                const promises = Array.from(images).map(img => {
-                    if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
-                    return new Promise(resolve => {
-                        img.onload = resolve;
-                        img.onerror = resolve; 
-                    });
-                });
-                await Promise.all(promises);
-            };
-
-            const handleDownloadImage = async () => {
-                if (!downloadRef.current) return;
-                
-                setIsDownloading(true);
-                try {
-                    // Tunggu sebentar
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    await preloadImages(downloadRef.current);
-
-                    const canvas = await html2canvas(downloadRef.current, {
-                        backgroundColor: "#1a1a1a",
-                        scale: 2, 
-                        useCORS: true, 
-                        allowTaint: true,
-                        logging: false,
-                        width: 800, 
-                        height: 450,
-                        // windowWidth fix memastikan layout dirender seperti di desktop
-                        windowWidth: 1200, 
-                    });
-                    
-                    const image = canvas.toDataURL("image/png");
-                    const link = document.createElement("a");
-                    link.href = image;
-                    link.download = `concrete-certified-${username || 'user'}.png`;
-                    link.click();
-                } catch (error) {
-                    console.error("Download failed:", error);
-                    alert("Gagal mengunduh gambar. Silakan coba lagi.");
-                } finally {
-                    setIsDownloading(false);
-                }
             };
 
             return (
                 <div className="w-full max-w-2xl animate-fade-in relative font-sans">
                     
-                    {/* Header (Hidden on Result Screen) */}
+                    {/* Header */}
                     {!showScore && (
                     <div className="bg-concrete-surface rounded-t-2xl p-6 border-b-4 border-concrete flex flex-col items-center gap-4 relative overflow-hidden shadow-2xl">
                          <div className="absolute top-0 left-0 w-full h-2 bg-[repeating-linear-gradient(45deg,#000,#000_10px,#f6e189_10px,#f6e189_20px)] opacity-50"></div>
 
                         <div className="w-20 h-20 rounded-xl border-4 border-concrete overflow-hidden shadow-lg z-10 bg-black">
-                            <CrossOriginAvatar src={IMAGES.logo} className="w-full h-full object-cover" />
+                            <img src={IMAGES.logo} className="w-full h-full object-cover" />
                         </div>
                         <h1 className="text-3xl font-black text-center text-white uppercase tracking-tighter">
                             Concrete <span className="text-concrete">Quiz</span>
@@ -480,7 +428,7 @@
                             </div>
                         ) : showScore ? (
                             // SCORE SCREEN
-                            <div className="flex flex-col items-center space-y-8 animate-fade-in relative z-10 w-full">
+                            <div className="flex flex-col items-center space-y-6 animate-fade-in relative z-10 w-full">
                                 
                                 {/* Username Input */}
                                 <div className="w-full max-w-sm space-y-2 text-center">
@@ -496,29 +444,13 @@
                                     />
                                 </div>
 
-                                {/* --- PREVIEW CONTAINER (SCALED) --- */}
-                                {/* Ini hanya untuk dilihat user di layar, BUKAN yang didownload */}
-                                <div className="w-full flex justify-center py-4 overflow-hidden">
-                                    <div className="origin-top transform scale-[0.45] sm:scale-75 md:scale-100 transition-transform duration-300 w-[800px] h-[450px]"> 
-                                        <CertificateCard 
-                                            username={username}
-                                            finalScore={finalScore}
-                                            tier={tier}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* --- GHOST CONTAINER (HIDDEN) --- */}
-                                {/* Container ini dirender di luar viewport, dengan ukuran dan font yang FIXED. 
-                                    Ini adalah solusi agar hasil download tidak berantakan. */}
-                                <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
-                                    <div ref={downloadRef}>
-                                        <CertificateCard 
-                                            username={username}
-                                            finalScore={finalScore}
-                                            tier={tier}
-                                        />
-                                    </div>
+                                {/* --- CERTIFICATE PREVIEW (RESPONSIVE) --- */}
+                                <div className="w-full p-2">
+                                    <CertificateCard 
+                                        username={username}
+                                        finalScore={finalScore}
+                                        tier={tier}
+                                    />
                                 </div>
 
                                 {/* Action Buttons */}
@@ -526,34 +458,23 @@
                                     <button
                                         onClick={handleShare}
                                         disabled={!username}
-                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all uppercase tracking-widest border-2 ${
+                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all uppercase tracking-widest border-2 w-full sm:w-auto ${
                                             username 
-                                            ? "bg-black text-white border-black hover:bg-gray-900 shadow-lg" 
+                                            ? "bg-black text-white border-black hover:bg-gray-900 shadow-lg cursor-pointer" 
                                             : "bg-transparent text-gray-500 border-gray-500 cursor-not-allowed"
                                         }`}
                                     >
                                         Share on X
                                     </button>
-
-                                    <button
-                                        onClick={handleDownloadImage}
-                                        disabled={!username || isDownloading}
-                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all uppercase tracking-widest ${
-                                            username 
-                                            ? "bg-concrete hover:bg-concrete-dark text-black shadow-lg shadow-yellow-500/20" 
-                                            : "bg-gray-400 text-gray-600 cursor-not-allowed"
-                                        }`}
-                                    >
-                                        {isDownloading ? (
-                                            <span className="animate-pulse">Generating...</span>
-                                        ) : (
-                                            "Download"
-                                        )}
-                                    </button>
                                 </div>
+                                
+                                <p className="text-[10px] text-gray-500 italic mt-2">
+                                    💡 Tip: Take a screenshot of your certificate manually to save it!
+                                </p>
+
                                 <button
                                     onClick={restartQuiz}
-                                    className="text-black font-bold text-[10px] hover:underline transition-all pt-4 uppercase tracking-widest opacity-60 hover:opacity-100"
+                                    className="text-black font-bold text-[10px] hover:underline transition-all pt-2 uppercase tracking-widest opacity-60 hover:opacity-100 cursor-pointer"
                                 >
                                     Restart Quiz
                                 </button>
@@ -582,7 +503,7 @@
                                         <button
                                             key={index}
                                             onClick={() => handleAnswerOptionClick(option.isCorrect)}
-                                            className="w-full text-left p-4 rounded-xl bg-black border border-gray-800 text-gray-300 hover:bg-gray-900 hover:text-white hover:border-concrete hover:shadow-[0_0_15px_rgba(246,225,137,0.2)] transition-all duration-200 active:scale-[0.99] group flex items-center gap-4"
+                                            className="w-full text-left p-4 rounded-xl bg-black border border-gray-800 text-gray-300 hover:bg-gray-900 hover:text-white hover:border-concrete hover:shadow-[0_0_15px_rgba(246,225,137,0.2)] transition-all duration-200 active:scale-[0.99] group flex items-center gap-4 cursor-pointer"
                                         >
                                             <div className="w-8 h-8 rounded-lg bg-gray-900 border border-gray-700 group-hover:bg-concrete group-hover:text-black group-hover:border-concrete flex items-center justify-center text-sm font-bold font-mono transition-all shrink-0">
                                                 {String.fromCharCode(65 + index)}
@@ -600,7 +521,7 @@
                         <span>Unofficial Quiz by</span>
                         <a href="https://x.com/SuperSkyzee" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black/10 px-3 py-1 rounded-full hover:bg-black/20 transition-all text-black">
                             <div className="w-5 h-5 rounded-full overflow-hidden border border-black/20 bg-gray-300">
-                                <CrossOriginAvatar src={IMAGES.creator} className="w-full h-full object-cover" />
+                                <img src={IMAGES.creator} className="w-full h-full object-cover" />
                             </div>
                             @SuperSkyzee
                         </a>
