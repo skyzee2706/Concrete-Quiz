@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concrete Quiz Preview</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        concrete: {
+                            DEFAULT: '#f6e189', // Kuning Concrete
+                            dark: '#e0cd7a',
+                            black: '#1a1a1a', 
+                            surface: '#262626',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- html2canvas for image generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body class="bg-concrete text-concrete-black min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="root" class="w-full flex justify-center"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- IMAGES ---
+        const IMAGES = {
+            logo: "https://i.ibb.co.com/jk6PR73Z/axp-GRz3c-400x400.png",
+            creator: "https://i.ibb.co.com/VpMjPqXh/y-EFjlr-YC-400x400.jpg"
+        };
+
+        // --- COMPONENTS ---
+
+        const CrossOriginAvatar = ({ src, className }) => {
+            return (
+                <img 
+                    src={src} 
+                    alt="avatar" 
+                    className={className}
+                    crossOrigin="anonymous" 
+                />
+            );
+        };
+
+        // --- LOGIC TIER ---
+        const getTier = (score) => {
+            const finalScore = score * 5;
+            if (finalScore >= 95) return { name: "PROTOCOL LEGEND", color: "text-concrete" }; 
+            if (finalScore >= 75) return { name: "YIELD MASTER", color: "text-white" };
+            if (finalScore >= 45) return { name: "DEFI SPECIALIST", color: "text-gray-300" };
+            return { name: "CONCRETE APPRENTICE", color: "text-gray-500" };
+        };
+
+        // --- DATA SOAL ---
+        const questions = [
+            {
+                question: "What is the primary advantage of Concrete’s 'Earn' product compared to manual DeFi yield farming?",
+                options: [
+                    { text: "It allows users to mint their own tokens.", isCorrect: false },
+                    { text: "It automatically rebalances assets across protocols to find the best risk-adjusted yield.", isCorrect: true },
+                    { text: "It guarantees a fixed 100% APY regardless of market conditions.", isCorrect: false },
+                    { text: "It only supports Bitcoin and does not work with other assets.", isCorrect: false },
+                ],
+            },
+            {
+                question: "Which technical standard does Concrete use to ensure its vaults are interoperable with other DeFi platforms?",
+                options: [
+                    { text: "ERC-721 (NFT Standard)", isCorrect: false },
+                    { text: "ERC-20 (Basic Token Standard)", isCorrect: false },
+                    { text: "ERC-4626 (Tokenized Vault Standard)", isCorrect: true },
+                    { text: "ERC-1155 (Multi-Token Standard)", isCorrect: false },
+                ],
+            },
+            {
+                question: "In Concrete Earn V2, what is the specific role of the 'Allocator'?",
+                options: [
+                    { text: "To create new marketing campaigns.", isCorrect: false },
+                    { text: "To manually approve every user deposit.", isCorrect: false },
+                    { text: "To safely move funds between different strategies ensuring exposure limits are respected.", isCorrect: true },
+                    { text: "To mint new ETH for the protocol.", isCorrect: false },
+                ],
+            },
+            {
+                question: "Why do some Concrete vaults utilize a 'Withdrawal Queue' or 'Async Withdrawals'?",
+                options: [
+                    { text: "To prevent users from ever withdrawing their funds.", isCorrect: false },
+                    { text: "To charge higher gas fees during peak hours.", isCorrect: false },
+                    { text: "To maintain liquidity and protect long-term depositors from the impact of sudden large withdrawals.", isCorrect: true },
+                    { text: "To manually verify the identity of every user withdrawing funds.", isCorrect: false },
+                ],
+            },
+            {
+                question: "How does the 'Enso' integration enhance the user experience on Concrete?",
+                options: [
+                    { text: "It allows users to bridge and swap assets into a vault in a single transaction from other chains.", isCorrect: true },
+                    { text: "It provides a social media feed within the app.", isCorrect: false },
+                    { text: "It serves as a wallet that stores your private keys.", isCorrect: false },
+                    { text: "It automatically pays your taxes.", isCorrect: false },
+                ],
+            },
+            {
+                question: "Concrete’s 'Quantitative Framework' generates 'C Scores' ranging from 0 to 10. What do these scores indicate?",
+                options: [
+                    { text: "The number of active users on the platform.", isCorrect: false },
+                    { text: "A simplified metric ranging from maximum bearish (0) to maximum bullish (10) sentiment.", isCorrect: true },
+                    { text: "The number of times the protocol has been hacked.", isCorrect: false },
+                    { text: "The percentage of fees users must pay daily.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What is the fee structure for depositing and withdrawing funds in Concrete Earn?",
+                options: [
+                    { text: "1% fee on deposit and 1% fee on withdrawal.", isCorrect: false },
+                    { text: "No fees on deposits or withdrawals; fees are only taken from Assets Under Management (AUM) annually.", isCorrect: true },
+                    { text: "$50 flat fee for every transaction.", isCorrect: false },
+                    { text: "Fees are calculated based on the user's social credit score.", isCorrect: false },
+                ],
+            },
+            {
+                question: "In the future roadmap, what function will the 'Protect' module serve?",
+                options: [
+                    { text: "It will act as an antivirus for your computer.", isCorrect: false },
+                    { text: "It will offer optional liquidation protection to guard positions against market volatility.", isCorrect: true },
+                    { text: "It will lock your funds for 10 years to prevent selling.", isCorrect: false },
+                    { text: "It will hide your transactions from the blockchain.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What happens when a specific Vault enters 'Deprecation'?",
+                options: [
+                    { text: "It offers double yield rewards for new depositors.", isCorrect: false },
+                    { text: "It transitions to a 'withdraw-only' mode and stops accruing new fees or yield.", isCorrect: true },
+                    { text: "It automatically deletes all user funds.", isCorrect: false },
+                    { text: "It moves all funds to a charity wallet.", isCorrect: false },
+                ],
+            },
+            {
+                question: "How does Concrete generate revenue for the protocol?",
+                options: [
+                    { text: "By selling user data to third parties.", isCorrect: false },
+                    { text: "Via Yield Fees (a percentage of profits) and an annualized AUM fee.", isCorrect: true },
+                    { text: "Through a subscription model where users pay monthly.", isCorrect: false },
+                    { text: "By charging users to join the Discord server.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What is the purpose of the 'Probability Engine' within the Quantitative Framework?",
+                options: [
+                    { text: "To predict lottery numbers.", isCorrect: false },
+                    { text: "To randomly assign yield to users.", isCorrect: false },
+                    { text: "To convert forecasts into probabilities for specific outcomes, aiding in risk mitigation.", isCorrect: true },
+                    { text: "To determine which user gets to withdraw first.", isCorrect: false },
+                ],
+            },
+            {
+                question: "Which of the following best describes the 'Honeypot Model' mentioned in Concrete’s vision?",
+                options: [
+                    { text: "A trap to catch hackers.", isCorrect: false },
+                    { text: "A system where large liquidity pools (Master Funds) are managed at a high level, with custom strategies built underneath.", isCorrect: true },
+                    { text: "A reward system where users get free honey jars.", isCorrect: false },
+                    { text: "A strictly single-asset vault that never interacts with other protocols.", isCorrect: false },
+                ],
+            },
+            {
+                question: "If you are bridging to a Concrete vault on a different chain (e.g., Ethereum to Berachain), what is critical to check regarding your wallet?",
+                options: [
+                    { text: "That you have at least 10 BTC in your wallet.", isCorrect: false },
+                    { text: "That you control the same wallet address on the destination chain to access your funds.", isCorrect: true },
+                    { text: "That you are using a specific brand of hardware wallet.", isCorrect: false },
+                    { text: "That you have posted about it on Twitter first.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What distinguishes 'Earn V2' from 'Earn V1'?",
+                options: [
+                    { text: "V2 is slower but cheaper.", isCorrect: false },
+                    { text: "V2 introduces full automation, role-based security, and verified daily NAV updates.", isCorrect: true },
+                    { text: "V2 requires manual spreadsheets for accounting.", isCorrect: false },
+                    { text: "V2 is only available for institutional investors.", isCorrect: false },
+                ],
+            },
+            {
+                question: "Regarding the 'Concrete Points Program Phase 1,' how are rewards currently earned?",
+                options: [
+                    { text: "Strictly based on the amount of USD deposited.", isCorrect: false },
+                    { text: "Through social actions like following on X, joining Discord, and writing content (via Absinthe).", isCorrect: true },
+                    { text: "By trading high-frequency strategies manually.", isCorrect: false },
+                    { text: "By referring people who must deposit at least $1,000.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What is the 'cut-off time' mechanism in weekly withdrawal batches designed to do?",
+                options: [
+                    { text: "Stop people from withdrawing on weekends.", isCorrect: false },
+                    { text: "Ensure that requests made after the deadline roll over to the next processing batch for orderly execution.", isCorrect: true },
+                    { text: "Cancel any withdrawal request that isn't large enough.", isCorrect: false },
+                    { text: "Force users to pay a penalty if they are late.", isCorrect: false },
+                ],
+            },
+            {
+                question: "Concrete uses 'Notional APY' to display returns. What does this mean?",
+                options: [
+                    { text: "It is a guaranteed rate that will never change.", isCorrect: false },
+                    { text: "It is a fake number used for marketing.", isCorrect: false },
+                    { text: "It is an estimated annual yield expressed in the asset originally deposited, based on current performance.", isCorrect: true },
+                    { text: "It is the yield paid out in Concrete's native token only.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What is 'Leveraged Yield Generation' in the context of Concrete's strategies?",
+                options: [
+                    { text: "Using vault liquidity to offer flash loans or capital disbursements to generate extra fee income.", isCorrect: true },
+                    { text: "Borrowing money from a bank to buy crypto.", isCorrect: false },
+                    { text: "Asking users to leverage their houses to deposit more.", isCorrect: false },
+                    { text: "A strategy that only works when the market goes down.", isCorrect: false },
+                ],
+            },
+            {
+                question: "What is a 'Strategy' in the technical context of a Concrete Vault?",
+                options: [
+                    { text: "A written document explaining the plan.", isCorrect: false },
+                    { text: "A smart contract that interacts with external DeFi protocols (like Aave or Pendle) to earn yield.", isCorrect: true },
+                    { text: "A voting mechanism for users.", isCorrect: false },
+                    { text: "A manual trade executed by the CEO.", isCorrect: false },
+                ],
+            },
+            {
+                question: "If a user wants to withdraw from a 'Stable' vault (like ctStableUSDT) after the queue opens in Dec 2025, what is the expected wait time?",
+                options: [
+                    { text: "Instant execution (0 seconds).", isCorrect: false },
+                    { text: "Up to 7 days (Withdrawal period).", isCorrect: true },
+                    { text: "30 days minimum.", isCorrect: false },
+                    { text: "1 year lock-up.", isCorrect: false },
+                ],
+            },
+        ];
+
+        // --- CERTIFICATE COMPONENT (ROBUST LAYOUT) ---
+        const CertificateCard = ({ username, finalScore, tier }) => {
+            return (
+                <div 
+                    className="relative bg-black flex-shrink-0 rounded-none overflow-hidden shadow-2xl border-[6px] border-concrete box-border"
+                    // Force size dengan style inline agar html2canvas tidak bingung dengan class Tailwind
+                    style={{ 
+                        width: '800px', 
+                        height: '450px',
+                        fontFamily: 'Inter, sans-serif',
+                        position: 'relative'
+                    }}
+                >
+                    {/* Background Elements */}
+                    <div className="absolute inset-0 bg-concrete-surface opacity-90"></div>
+                    <div className="absolute top-0 right-0 w-[400px] h-full bg-concrete transform skew-x-[-20deg] translate-x-20 opacity-10"></div>
+                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-concrete rounded-full blur-[100px] opacity-10"></div>
+                    
+                    {/* Striped Lines */}
+                    <div className="absolute top-0 left-0 w-full h-4 bg-[repeating-linear-gradient(90deg,#000,#000_20px,#f6e189_20px,#f6e189_40px)] z-20"></div>
+                    <div className="absolute bottom-0 left-0 w-full h-4 bg-[repeating-linear-gradient(90deg,#000,#000_20px,#f6e189_20px,#f6e189_40px)] z-20"></div>
+
+                    {/* CONTENT LAYOUT - MENGGUNAKAN FLEXBOX ABSOLUT AGAR TIDAK "KETIMPA" */}
+                    <div className="absolute inset-0 z-10 flex flex-row p-10 gap-8 items-center justify-between">
+                        
+                        {/* LEFT SIDE: TEXT INFO (Width 60%) */}
+                        <div className="flex flex-col justify-between h-full py-4" style={{ width: '480px' }}>
+                            <div className="flex flex-col gap-2">
+                                <div className="inline-block px-3 py-1 bg-concrete text-black text-xs font-black font-mono tracking-[0.2em] uppercase rounded-sm w-fit">
+                                    Official Certification
+                                </div>
+                                <h2 className="text-5xl font-black text-white leading-[0.9] uppercase tracking-tighter" style={{ fontSize: '3.5rem', lineHeight: '1' }}>
+                                    Concrete <br/><span className="text-concrete">Mastery</span>
+                                </h2>
+                            </div>
+
+                            <div className="flex flex-col gap-6">
+                                <div>
+                                    <div className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2">Awarded To</div>
+                                    <div className="text-3xl font-bold text-white bg-black/60 border-l-8 border-concrete px-6 py-3 inline-block max-w-[450px] truncate font-mono box-border">
+                                        {username ? username : "@username"}
+                                    </div>
+                                </div>
+
+                                {/* TIER DISPLAY */}
+                                <div>
+                                    <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Achieved Rank</div>
+                                    <div className={`text-2xl font-black ${tier.color} uppercase tracking-tight font-mono`} style={{ fontSize: '1.75rem' }}>
+                                        {tier.name}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 text-xs text-gray-400 font-mono uppercase border-t border-gray-700 pt-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded bg-gray-800 overflow-hidden border border-gray-600 shrink-0">
+                                            <CrossOriginAvatar src={IMAGES.creator} className="w-full h-full object-cover" />
+                                        </div>
+                                        <span className="font-bold tracking-wider whitespace-nowrap">By @SuperSkyzee</span>
+                                    </div>
+                                    <div className="h-4 w-px bg-gray-700"></div>
+                                    <span className="tracking-wider whitespace-nowrap">{new Date().toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT SIDE: SCORE & LOGO (Width ~35%) */}
+                        <div className="flex flex-col items-center justify-center h-full bg-black/20 rounded-2xl border border-white/5 relative overflow-hidden" style={{ width: '240px' }}>
+                            {/* Main Logo */}
+                            <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-concrete shadow-2xl mb-6 relative z-10 bg-black shrink-0">
+                                    <CrossOriginAvatar src={IMAGES.logo} className="w-full h-full object-cover" />
+                            </div>
+
+                            <div className="text-center relative z-10">
+                                <div className="text-xs text-concrete font-bold uppercase tracking-[0.2em] mb-1">Total Score</div>
+                                <div className="text-8xl font-black text-white leading-none drop-shadow-xl font-mono" style={{ fontSize: '6rem' }}>
+                                    {finalScore}
+                                </div>
+                                <div className="text-sm font-bold text-gray-500 mt-2 tracking-wider">OUT OF 100</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN APP ---
+
+        function QuizApp() {
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [score, setScore] = useState(0);
+            const [showScore, setShowScore] = useState(false);
+            const [username, setUsername] = useState("");
+            const [isStarted, setIsStarted] = useState(false);
+            const [isDownloading, setIsDownloading] = useState(false);
+            
+            const downloadRef = useRef(null);
+
+            const handleAnswerOptionClick = (isCorrect) => {
+                if (isCorrect) {
+                    setScore(prev => prev + 1);
+                }
+
+                const nextQuestion = currentQuestion + 1;
+                if (nextQuestion < questions.length) {
+                    setCurrentQuestion(nextQuestion);
+                } else {
+                    setShowScore(true);
+                }
+            };
+
+            const restartQuiz = () => {
+                setScore(0);
+                setCurrentQuestion(0);
+                setShowScore(false);
+                setIsStarted(false);
+                setUsername("");
+            };
+
+            const finalScore = score * 5;
+            const tier = getTier(score);
+
+            const handleShare = () => {
+                // FIXED: Teks share sekarang menyertakan TIER NAME
+                const text = `I just earned the rank of ${tier.name} with a score of ${finalScore}/100 in the Concrete Quiz! 🏆\n\nTest your knowledge about @ConcreteXYZ ecosystem now!\n\nCreator: @SuperSkyzee\nLink: concrete-quiz.vercel.app`;
+                const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                window.open(url, "_blank");
+            };
+
+            const preloadImages = async (element) => {
+                const images = element.querySelectorAll('img');
+                const promises = Array.from(images).map(img => {
+                    if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve; 
+                    });
+                });
+                await Promise.all(promises);
+            };
+
+            const handleDownloadImage = async () => {
+                if (!downloadRef.current) return;
+                
+                setIsDownloading(true);
+                try {
+                    // Tunggu sebentar
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await preloadImages(downloadRef.current);
+
+                    const canvas = await html2canvas(downloadRef.current, {
+                        backgroundColor: "#1a1a1a",
+                        scale: 2, 
+                        useCORS: true, 
+                        allowTaint: true,
+                        logging: false,
+                        width: 800, 
+                        height: 450,
+                        // windowWidth fix memastikan layout dirender seperti di desktop
+                        windowWidth: 1200, 
+                    });
+                    
+                    const image = canvas.toDataURL("image/png");
+                    const link = document.createElement("a");
+                    link.href = image;
+                    link.download = `concrete-certified-${username || 'user'}.png`;
+                    link.click();
+                } catch (error) {
+                    console.error("Download failed:", error);
+                    alert("Gagal mengunduh gambar. Silakan coba lagi.");
+                } finally {
+                    setIsDownloading(false);
+                }
+            };
+
+            return (
+                <div className="w-full max-w-2xl animate-fade-in relative font-sans">
+                    
+                    {/* Header (Hidden on Result Screen) */}
+                    {!showScore && (
+                    <div className="bg-concrete-surface rounded-t-2xl p-6 border-b-4 border-concrete flex flex-col items-center gap-4 relative overflow-hidden shadow-2xl">
+                         <div className="absolute top-0 left-0 w-full h-2 bg-[repeating-linear-gradient(45deg,#000,#000_10px,#f6e189_10px,#f6e189_20px)] opacity-50"></div>
+
+                        <div className="w-20 h-20 rounded-xl border-4 border-concrete overflow-hidden shadow-lg z-10 bg-black">
+                            <CrossOriginAvatar src={IMAGES.logo} className="w-full h-full object-cover" />
+                        </div>
+                        <h1 className="text-3xl font-black text-center text-white uppercase tracking-tighter">
+                            Concrete <span className="text-concrete">Quiz</span>
+                        </h1>
+                    </div>
+                    )}
+
+                    {/* Main Container */}
+                    <div className={`${!showScore ? 'bg-concrete-surface rounded-b-2xl border border-gray-800 shadow-2xl overflow-hidden p-8 min-h-[400px]' : 'w-full'} flex flex-col justify-center relative`}>
+                        
+                        {!isStarted ? (
+                            // START SCREEN
+                            <div className="text-center space-y-8 animate-fade-in relative z-10">
+                                <div className="space-y-4">
+                                    <p className="text-2xl text-white font-bold leading-relaxed">
+                                        Test your knowledge about Concrete.
+                                    </p>
+                                    <div className="inline-block px-4 py-2 bg-black rounded border border-gray-700 text-concrete font-mono text-sm tracking-wider font-bold">
+                                        // 20 QUESTIONS • 5 POINTS EACH
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setIsStarted(true)}
+                                    className="px-12 py-4 bg-concrete hover:bg-concrete-dark text-black rounded-xl font-black text-xl transition-all transform hover:scale-105 shadow-[0_0_0_4px_rgba(0,0,0,0.2)] hover:shadow-[0_0_20px_rgba(246,225,137,0.4)] uppercase tracking-wide flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    Start Quiz
+                                </button>
+                            </div>
+                        ) : showScore ? (
+                            // SCORE SCREEN
+                            <div className="flex flex-col items-center space-y-8 animate-fade-in relative z-10 w-full">
+                                
+                                {/* Username Input */}
+                                <div className="w-full max-w-sm space-y-2 text-center">
+                                    <label className="block text-xs font-bold text-gray-800 uppercase tracking-widest">
+                                        Enter Username to Claim
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="@yourusername"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none text-center text-white placeholder-gray-600 transition-all font-mono text-lg font-bold shadow-lg"
+                                    />
+                                </div>
+
+                                {/* --- PREVIEW CONTAINER (SCALED) --- */}
+                                {/* Ini hanya untuk dilihat user di layar, BUKAN yang didownload */}
+                                <div className="w-full flex justify-center py-4 overflow-hidden">
+                                    <div className="origin-top transform scale-[0.45] sm:scale-75 md:scale-100 transition-transform duration-300 w-[800px] h-[450px]"> 
+                                        <CertificateCard 
+                                            username={username}
+                                            finalScore={finalScore}
+                                            tier={tier}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* --- GHOST CONTAINER (HIDDEN) --- */}
+                                {/* Container ini dirender di luar viewport, dengan ukuran dan font yang FIXED. 
+                                    Ini adalah solusi agar hasil download tidak berantakan. */}
+                                <div style={{ position: "fixed", top: "-9999px", left: "-9999px" }}>
+                                    <div ref={downloadRef}>
+                                        <CertificateCard 
+                                            username={username}
+                                            finalScore={finalScore}
+                                            tier={tier}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-col sm:flex-row gap-3 w-full justify-center pt-2">
+                                    <button
+                                        onClick={handleShare}
+                                        disabled={!username}
+                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all uppercase tracking-widest border-2 ${
+                                            username 
+                                            ? "bg-black text-white border-black hover:bg-gray-900 shadow-lg" 
+                                            : "bg-transparent text-gray-500 border-gray-500 cursor-not-allowed"
+                                        }`}
+                                    >
+                                        Share on X
+                                    </button>
+
+                                    <button
+                                        onClick={handleDownloadImage}
+                                        disabled={!username || isDownloading}
+                                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold text-xs transition-all uppercase tracking-widest ${
+                                            username 
+                                            ? "bg-concrete hover:bg-concrete-dark text-black shadow-lg shadow-yellow-500/20" 
+                                            : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                                        }`}
+                                    >
+                                        {isDownloading ? (
+                                            <span className="animate-pulse">Generating...</span>
+                                        ) : (
+                                            "Download"
+                                        )}
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={restartQuiz}
+                                    className="text-black font-bold text-[10px] hover:underline transition-all pt-4 uppercase tracking-widest opacity-60 hover:opacity-100"
+                                >
+                                    Restart Quiz
+                                </button>
+                            </div>
+                        ) : (
+                            // QUESTION SCREEN
+                            <div className="space-y-8 animate-fade-in relative z-10">
+                                <div className="flex justify-between items-center text-[10px] text-concrete font-mono tracking-widest uppercase bg-black px-3 py-1 rounded">
+                                    <span>Question {currentQuestion + 1}/{questions.length}</span>
+                                    <span>Score: {score * 5}</span>
+                                </div>
+                                
+                                <div className="w-full bg-black rounded-full h-2 overflow-hidden border border-gray-800">
+                                    <div 
+                                        className="bg-concrete h-full transition-all duration-500 ease-out"
+                                        style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+                                    ></div>
+                                </div>
+
+                                <h2 className="text-xl font-bold text-white min-h-[60px] flex items-center leading-relaxed">
+                                    {questions[currentQuestion].question}
+                                </h2>
+
+                                <div className="grid gap-3">
+                                    {questions[currentQuestion].options.map((option, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => handleAnswerOptionClick(option.isCorrect)}
+                                            className="w-full text-left p-4 rounded-xl bg-black border border-gray-800 text-gray-300 hover:bg-gray-900 hover:text-white hover:border-concrete hover:shadow-[0_0_15px_rgba(246,225,137,0.2)] transition-all duration-200 active:scale-[0.99] group flex items-center gap-4"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-gray-900 border border-gray-700 group-hover:bg-concrete group-hover:text-black group-hover:border-concrete flex items-center justify-center text-sm font-bold font-mono transition-all shrink-0">
+                                                {String.fromCharCode(65 + index)}
+                                            </div>
+                                            <span className="font-medium text-sm">{option.text}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {!showScore && (
+                    <footer className="bg-transparent py-6 text-center text-black/60 text-[10px] font-mono uppercase tracking-widest font-bold flex flex-col items-center gap-2">
+                        <span>Unofficial Quiz by</span>
+                        <a href="https://x.com/SuperSkyzee" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black/10 px-3 py-1 rounded-full hover:bg-black/20 transition-all text-black">
+                            <div className="w-5 h-5 rounded-full overflow-hidden border border-black/20 bg-gray-300">
+                                <CrossOriginAvatar src={IMAGES.creator} className="w-full h-full object-cover" />
+                            </div>
+                            @SuperSkyzee
+                        </a>
+                    </footer>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<QuizApp />);
+    </script>
+</body>
+</html>
